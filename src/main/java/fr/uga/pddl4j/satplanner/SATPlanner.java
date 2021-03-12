@@ -2,32 +2,32 @@ package fr.uga.pddl4j.satplanner;
 
 import fr.uga.pddl4j.encoding.CodedProblem;
 import fr.uga.pddl4j.heuristics.relaxation.Heuristic;
+import fr.uga.pddl4j.heuristics.relaxation.HeuristicToolKit;
+import fr.uga.pddl4j.parser.ErrorManager;
 import fr.uga.pddl4j.planners.Planner;
+import fr.uga.pddl4j.planners.ProblemFactory;
+import fr.uga.pddl4j.planners.Statistics;
 import fr.uga.pddl4j.planners.statespace.AbstractStateSpacePlanner;
 import fr.uga.pddl4j.planners.statespace.StateSpacePlanner;
-import fr.uga.pddl4j.planners.ProblemFactory;
 import fr.uga.pddl4j.planners.statespace.search.strategy.AStar;
 import fr.uga.pddl4j.planners.statespace.search.strategy.Node;
 import fr.uga.pddl4j.planners.statespace.search.strategy.StateSpaceStrategy;
-import fr.uga.pddl4j.planners.Statistics;
-import fr.uga.pddl4j.heuristics.relaxation.HeuristicToolKit;
-import fr.uga.pddl4j.parser.ErrorManager;
-import fr.uga.pddl4j.util.MemoryAgent;
-import fr.uga.pddl4j.util.Plan;
-import fr.uga.pddl4j.util.SequentialPlan;
 import fr.uga.pddl4j.util.BitOp;
 import fr.uga.pddl4j.util.BitState;
 import fr.uga.pddl4j.util.CondBitExp;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Comparator;
-import java.util.PriorityQueue;
-
+import fr.uga.pddl4j.util.MemoryAgent;
+import fr.uga.pddl4j.util.Plan;
+import fr.uga.pddl4j.util.SequentialPlan;
 
 import java.io.File;
 import java.io.IOException;
+
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Properties;
+import java.util.Set;
 
 public final class SATPlanner extends AbstractStateSpacePlanner {
 
@@ -60,21 +60,29 @@ public final class SATPlanner extends AbstractStateSpacePlanner {
         // Parse the command line and update the default argument value
         for (int i = 0; i < args.length; i += 2) {
             if ("-o".equalsIgnoreCase(args[i]) && ((i + 1) < args.length)) {
-            if (!new File(args[i + 1]).exists()) return null;
-            arguments.put(Planner.DOMAIN, new File(args[i + 1]));
+                if (!new File(args[i + 1]).exists()) {
+                    return null;
+                }
+                arguments.put(Planner.DOMAIN, new File(args[i + 1]));
             } else if ("-f".equalsIgnoreCase(args[i]) && ((i + 1) < args.length)) {
-            if (!new File(args[i + 1]).exists()) return null;
-            arguments.put(Planner.PROBLEM, new File(args[i + 1]));
+                if (!new File(args[i + 1]).exists()) {
+                    return null;
+                }
+                arguments.put(Planner.PROBLEM, new File(args[i + 1]));
             } else if ("-t".equalsIgnoreCase(args[i]) && ((i + 1) < args.length)) {
-            final int timeout = Integer.parseInt(args[i + 1]) * 1000;
-            if (timeout < 0) return null;
-            arguments.put(Planner.TIMEOUT, timeout);
+                final int timeout = Integer.parseInt(args[i + 1]) * 1000;
+                if (timeout < 0) {
+                    return null;
+                }
+                arguments.put(Planner.TIMEOUT, timeout);
             } else if ("-w".equalsIgnoreCase(args[i]) && ((i + 1) < args.length)) {
-            final double weight = Double.parseDouble(args[i + 1]);
-            if (weight < 0) return null;
-            arguments.put(StateSpacePlanner.WEIGHT, weight);
+                final double weight = Double.parseDouble(args[i + 1]);
+                if (weight < 0) {
+                    return null;
+                }
+                arguments.put(StateSpacePlanner.WEIGHT, weight);
             } else {
-            return null;
+                return null;
             }
         }
         // Return null if the domain or the problem was not specified
@@ -249,8 +257,8 @@ public final class SATPlanner extends AbstractStateSpacePlanner {
 
         final CodedProblem pb = factory.encode();
         Planner.getLogger().trace("\nencoding problem done successfully ("
-        		    + pb.getOperators().size() + " ops, "
-        		    + pb.getRelevantFacts().size() + " facts)\n");
+                    + pb.getOperators().size() + " ops, "
+                    + pb.getRelevantFacts().size() + " facts)\n");
         if (!pb.isSolvable()) {
             Planner.getLogger().trace(String.format("goal can be simplified to FALSE."
                     +  "no search will solve it%n%n"));
@@ -271,16 +279,16 @@ public final class SATPlanner extends AbstractStateSpacePlanner {
 
         // Print time information
         long time = info.getTimeToParse() +  info.getTimeToEncode() + info.getTimeToSearch();
-        Planner.getLogger().trace(String.format("%ntime spent:   %8.2f seconds parsing %n", info.getTimeToParse()/1000.0));
-        Planner.getLogger().trace(String.format("              %8.2f seconds encoding %n", info.getTimeToEncode()/1000.0));
-        Planner.getLogger().trace(String.format("              %8.2f seconds searching%n", info.getTimeToSearch()/1000.0));
-        Planner.getLogger().trace(String.format("              %8.2f seconds total time%n", time/1000.0));
+        Planner.getLogger().trace(String.format("%ntime spent:   %8.2f seconds parsing %n", info.getTimeToParse() / 1000.0));
+        Planner.getLogger().trace(String.format("              %8.2f seconds encoding %n", info.getTimeToEncode() / 1000.0));
+        Planner.getLogger().trace(String.format("              %8.2f seconds searching%n", info.getTimeToSearch() / 1000.0));
+        Planner.getLogger().trace(String.format("              %8.2f seconds total time%n", time / 1000.0));
 
         // Print memory usage information
         long memory = info.getMemoryUsedForProblemRepresentation() + info.getMemoryUsedToSearch();
-        Planner.getLogger().trace(String.format("%nmemory used:  %8.2f MBytes for problem representation%n", info.getMemoryUsedForProblemRepresentation()/(1024.0*1024.0)));
-        Planner.getLogger().trace(String.format("              %8.2f MBytes for searching%n", info.getMemoryUsedToSearch()/(1024.0*1024.0)));
-        Planner.getLogger().trace(String.format("              %8.2f MBytes total%n%n%n", memory/(1024.0*1024.0)));
+        Planner.getLogger().trace(String.format("%nmemory used:  %8.2f MBytes for problem representation%n", info.getMemoryUsedForProblemRepresentation() / (1024.0 * 1024.0)));
+        Planner.getLogger().trace(String.format("              %8.2f MBytes for searching%n", info.getMemoryUsedToSearch() / (1024.0 * 1024.0)));
+        Planner.getLogger().trace(String.format("              %8.2f MBytes total%n%n%n", memory / (1024.0 * 1024.0)));
 
         long begin = System.currentTimeMillis();
         planner.getStatistics().setTimeToSearch(System.currentTimeMillis() - begin);
