@@ -1,4 +1,4 @@
-package src.main.java;
+package fr.uga.pddl4j.satplanner;
 
 import fr.uga.pddl4j.encoding.CodedProblem;
 import fr.uga.pddl4j.heuristics.relaxation.Heuristic;
@@ -10,10 +10,20 @@ import fr.uga.pddl4j.planners.statespace.search.strategy.AStar;
 import fr.uga.pddl4j.planners.statespace.search.strategy.Node;
 import fr.uga.pddl4j.planners.statespace.search.strategy.StateSpaceStrategy;
 import fr.uga.pddl4j.planners.Statistics;
+import fr.uga.pddl4j.heuristics.relaxation.HeuristicToolKit;
 import fr.uga.pddl4j.parser.ErrorManager;
 import fr.uga.pddl4j.util.MemoryAgent;
 import fr.uga.pddl4j.util.Plan;
 import fr.uga.pddl4j.util.SequentialPlan;
+import fr.uga.pddl4j.util.BitOp;
+import fr.uga.pddl4j.util.BitState;
+import fr.uga.pddl4j.util.CondBitExp;
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Comparator;
+import java.util.PriorityQueue;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -152,7 +162,7 @@ public final class SATPlanner extends AbstractStateSpacePlanner {
                             }
                         }
                         // We set the new child node information
-                        final int g = current.getCost() + 1;
+                        final int g = (int)current.getCost() + 1;
                         if (!close.contains(next)) {
                             next.setCost(g);
                             next.setParent(current);
