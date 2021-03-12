@@ -106,88 +106,14 @@ public final class SATPlanner extends AbstractStateSpacePlanner {
     }
 
     /**
-    * Solves the planning problem and returns the first solution search found.
+    * TODO
     *
     * @param problem the problem to be solved.
-    * @return a solution search or null if it does not exist.
+    * @return TODO
     */
     @Override
-    public Plan search(final CodedProblem problem) {
-        // First we create an instance of the heuristic to use to guide the search
-        final Heuristic heuristic = HeuristicToolKit.createHeuristic(Heuristic.Type.FAST_FORWARD, problem);
-
-        // We get the initial state from the planning problem
-        final BitState init = new BitState(problem.getInit());
-
-        // We initialize the closed list of nodes (store the nodes explored)
-        final Set<Node> close = new HashSet<>();
-
-        // We initialize the opened list to store the pending node according to function f
-        final double weight = (double) arguments.get(StateSpacePlanner.WEIGHT);
-        final PriorityQueue<Node> open = new PriorityQueue<>(100, new Comparator<Node>() {
-            public int compare(Node n1, Node n2) {
-                double f1 =  weight * n1.getHeuristic() + n1.getCost();
-                double f2 = weight * n2.getHeuristic() + n2.getCost();
-                return Double.compare(f1, f2);
-            }
-        });
-
-        // We create the root node of the tree search
-        final Node root = new Node(init, null, -1, 0, heuristic.estimate(init, problem.getGoal()));
-
-        // We adds the root to the list of pending nodes
-        open.add(root);
-        Plan plan = null;
-
-        final int timeout = ((int) this.arguments.get(Planner.TIMEOUT)) * 1000;
-        long time = 0;
-
-        // We start the search
-        while (!open.isEmpty() && plan == null && time < timeout) {
-
-            // We pop the first node in the pending list open
-            final Node current = open.poll();
-            close.add(current);
-
-            // If the goal is satisfy in the current node then extract the search and return it
-            if (current.satisfy(problem.getGoal())) {
-                return this.extractPlan(current, problem);
-            }
-
-            // Else we try to apply the operators of the problem to the current node
-            else {
-                for (int i = 0; i < problem.getOperators().size(); i++) {
-                    // We get the its operator of the problem
-                    BitOp a = problem.getOperators().get(i);
-                    // If the operator is applicable in the current node
-                    if (a.isApplicable(current)) {
-                        Node next = new Node(current);
-                        // We apply the effect of the operator
-                        final List<CondBitExp> effects = a.getCondEffects();
-                        for (CondBitExp ce : effects) {
-                            if (current.satisfy(ce.getCondition())) {
-                                next.apply(ce.getEffects());
-                            }
-                        }
-                        // We set the new child node information
-                        final int g = (int)current.getCost() + 1;
-                        if (!close.contains(next)) {
-                            next.setCost(g);
-                            next.setParent(current);
-                            next.setOperator(i);
-                            next.setHeuristic(heuristic.estimate(next, problem.getGoal()));
-                            open.add(next);
-                        }
-                    }
-                }
-            }
-        }
-
-        // We compute the memory by the search
-        this.getStatistics().setMemoryUsedToSearch(MemoryAgent.sizeOf(open) + MemoryAgent.sizeOf(close));
-
-        // Finally, we return the search computed or null if no search was found
-        return plan;
+    public /* TODO */ encodeToSAT(final CodedProblem problem) {
+        // TODO
     }
 
     /**
@@ -265,7 +191,7 @@ public final class SATPlanner extends AbstractStateSpacePlanner {
             System.exit(0);
         }
 
-        final Plan plan = planner.search(pb);
+        final Plan plan = planner.encodeToSAT(pb);
         if (plan != null) {
             // Print plan information
             Planner.getLogger().trace(String.format("%nfound plan as follows:%n%n" + pb.toString(plan)));
