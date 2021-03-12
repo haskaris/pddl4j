@@ -7,7 +7,6 @@ import fr.uga.pddl4j.parser.ErrorManager;
 import fr.uga.pddl4j.planners.Planner;
 import fr.uga.pddl4j.planners.ProblemFactory;
 import fr.uga.pddl4j.planners.Statistics;
-import fr.uga.pddl4j.planners.statespace.AbstractStateSpacePlanner;
 import fr.uga.pddl4j.planners.statespace.StateSpacePlanner;
 import fr.uga.pddl4j.planners.statespace.search.strategy.AStar;
 import fr.uga.pddl4j.planners.statespace.search.strategy.Node;
@@ -18,6 +17,10 @@ import fr.uga.pddl4j.util.CondBitExp;
 import fr.uga.pddl4j.util.MemoryAgent;
 import fr.uga.pddl4j.util.Plan;
 import fr.uga.pddl4j.util.SequentialPlan;
+import org.sat4j.core.VecInt;
+import org.sat4j.minisat.SolverFactory;
+import org.sat4j.specs.IProblem;
+import org.sat4j.specs.ISolver;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +32,7 @@ import java.util.PriorityQueue;
 import java.util.Properties;
 import java.util.Set;
 
-public final class SATPlanner extends AbstractStateSpacePlanner {
+public final class SATPlanner {
 
     /*
     * The arguments of the planner.
@@ -106,14 +109,24 @@ public final class SATPlanner extends AbstractStateSpacePlanner {
     }
 
     /**
-    * TODO
+    * Encode problem into a solver as a DIMACS DNF structure.
     *
     * @param problem the problem to be solved.
-    * @return TODO
+    * @return IProblem
     */
-    @Override
-    public /* TODO */ encodeToSAT(final CodedProblem problem) {
-        // TODO
+    public IProblem encodeToSAT(final CodedProblem problem) {
+        ISolver solver = SolverFactory.newDefault();
+        List<BitOp> listOperators = problem.getOperators();
+        List<String> listPredicates = problem.getPredicates();
+        int maxVar = listOperators.size();
+        int nbClauses = listPredicates.size();
+        solver.newVar(maxVar);
+        solver.setExpectedNumberOfClauses(nbClauses);
+        for (int i = 0; i < nbClauses; i++) {
+            /*int clause[] = ???; // TODO - get clause
+            solver.addClause(new VecInt(clause));*/
+        }
+        return (IProblem) solver;
     }
 
     /**
@@ -191,33 +204,11 @@ public final class SATPlanner extends AbstractStateSpacePlanner {
             System.exit(0);
         }
 
-        final Plan plan = planner.encodeToSAT(pb);
-        if (plan != null) {
-            // Print plan information
-            Planner.getLogger().trace(String.format("%nfound plan as follows:%n%n" + pb.toString(plan)));
-            Planner.getLogger().trace(String.format("%nplan total cost: %4.2f%n%n", plan.cost()));
+        final IProblem pbSAT = planner.encodeToSAT(pb);
+        if (pbSAT != null) {
+            // TODO
         } else {
-            Planner.getLogger().trace(String.format(String.format("%nno plan found%n%n")));
+            // TODO
         }
-
-        // Get the runtime information from the planner
-        Statistics info = planner.getStatistics();
-
-        // Print time information
-        long time = info.getTimeToParse() +  info.getTimeToEncode() + info.getTimeToSearch();
-        Planner.getLogger().trace(String.format("%ntime spent:   %8.2f seconds parsing %n", info.getTimeToParse() / 1000.0));
-        Planner.getLogger().trace(String.format("              %8.2f seconds encoding %n", info.getTimeToEncode() / 1000.0));
-        Planner.getLogger().trace(String.format("              %8.2f seconds searching%n", info.getTimeToSearch() / 1000.0));
-        Planner.getLogger().trace(String.format("              %8.2f seconds total time%n", time / 1000.0));
-
-        // Print memory usage information
-        long memory = info.getMemoryUsedForProblemRepresentation() + info.getMemoryUsedToSearch();
-        Planner.getLogger().trace(String.format("%nmemory used:  %8.2f MBytes for problem representation%n", info.getMemoryUsedForProblemRepresentation() / (1024.0 * 1024.0)));
-        Planner.getLogger().trace(String.format("              %8.2f MBytes for searching%n", info.getMemoryUsedToSearch() / (1024.0 * 1024.0)));
-        Planner.getLogger().trace(String.format("              %8.2f MBytes total%n%n%n", memory / (1024.0 * 1024.0)));
-
-        long begin = System.currentTimeMillis();
-        planner.getStatistics().setTimeToSearch(System.currentTimeMillis() - begin);
-        planner.getStatistics().setMemoryUsedForProblemRepresentation(MemoryAgent.getDeepSizeOf(pb));
     }
 }
